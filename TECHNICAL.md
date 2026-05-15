@@ -17,6 +17,7 @@ This document covers internal architecture, data flow, algorithms, and implement
 9. [Guitarist Profile Schema](#9-guitarist-profile-schema)
 10. [State Management](#10-state-management)
 11. [Styling System](#11-styling-system)
+12. [MCP Server](#12-mcp-server)
 
 ---
 
@@ -26,11 +27,15 @@ This document covers internal architecture, data flow, algorithms, and implement
 src/
 ├── App.jsx                ← monolith: all generators, all UI, all audio
 └── guitarists/
-    ├── evh.js             ← data
+    ├── evh.js             ← data + style prompt (shared by web app and MCP server)
     ├── demartini.js
     ├── george-lynch.js
     ├── puget.js
     └── ian-dsa.js
+
+mcp/
+├── index.js               ← MCP server: three knowledge tools, stdio transport
+└── package.json           ← separate package; own node_modules
 ```
 
 The entire frontend lives in `App.jsx`. There is no router, no global state library, no CSS framework, and no audio library. The file has three logical sections:
@@ -506,3 +511,110 @@ style={{ '--gc': g.color }}
 ### Responsive Layout
 
 The two panels are in a CSS Grid with `grid-template-columns: 1fr 1fr`. A `@media(max-width:680px)` breakpoint switches to `1fr`, stacking the panels vertically.
+
+---
+
+## 12. MCP Server
+
+The MCP server lives in `mcp/` as a self-contained Node.js package. It has its own `package.json` and `node_modules` — it is not bundled with the Vite frontend. Its only dependencies are `@modelcontextprotocol/sdk` and `zod`.
+
+### Purpose and Design
+
+The server exposes guitarist knowledge as MCP tools. It makes no external network calls. Any MCP-compatible client can connect to it; the LLM attached to that client does the actual tab generation based on what the tools return.
+
+The guitarist profiles in `src/guitarists/` are pure ESM data modules with no browser dependencies, so the server imports them directly via relative paths (`../src/guitarists/evh.js` etc.). This means there is a single source of truth: the same profile objects that drive the web app's procedural generators also power the MCP tools.
+
+### Module-Level Data
+
+The server defines three lookup objects that supplement the imported profile data:
+
+**`STYLE_SUMMARIES`** — One-sentence style description per guitarist. Used by `list_guitarists`. Kept terse so it fits comfortably in a tool response without overwhelming context.
+
+**`TECHNIQUES`** — Curated, ordered lists of lead and rhythm techniques per guitarist. These are not directly in the profile schema — they are synthesized from knowledge embedded in the `aiPrompt` strings and the generator logic. The `generate_tab` tool includes the relevant list (lead or rhythm) in its response, giving the LLM a prioritized checklist of style-accurate techniques to apply.
+
+**`TAB_FORMAT_SPEC`** — A multi-line string that fully specifies the ASCII tab format: grid dimensions, column semantics, fret encoding, decoration characters, string name variants for each tuning, two worked examples, and the required JSON output shape. Embedded directly in the server so it travels with every `generate_tab` call and the LLM never has to infer the format.
+
+### Tools
+
+#### `list_guitarists`
+
+No input parameters. Returns a JSON array of five objects:
+
+```json
+[
+  {
+    "id": "evh",
+    "name": "Eddie Van Halen",
+    "band": "Van Halen",
+    "era": "1978–1984",
+    "tuning": "E standard (recorded Eb half-step down; tabbed at E)",
+    "style_summary": "..."
+  },
+  ...
+]
+```
+
+Fields are drawn directly from the imported profile (`p.id`, `p.name`, `p.band`, `p.era`, `p.tuningName`) plus the server-local `STYLE_SUMMARIES` lookup.
+
+#### `get_guitarist_profile`
+
+Input: `guitarist_id` (enum: `evh` | `dem` | `lnch` | `jade` | `ian`).
+
+Returns a single JSON object:
+
+```json
+{
+  "identity":          { "id", "name", "band", "era" },
+  "tuning":            { "name", "open_strings_midi", "string_names_high_low" },
+  "bpm_ranges":        { "lead": { "min", "max" }, "rhythm": { "min", "max" } },
+  "scale_vocabulary":  { "scaleName": [semitone intervals], ... },
+  "lead_positions":    [preferred 4-fret window starting frets],
+  "techniques":        { "lead": [...], "rhythm": [...] },
+  "song_references":   { "songKey": { "album", "key", "bpm", "tuning", "techniques", "notes" }, ... },
+  "feel_and_philosophy": "..."
+}
+```
+
+`open_strings_midi` is the 6-element MIDI array from the profile (index 0 = low string). This gives a client enough information to independently resolve fret positions from MIDI pitches. Up to six song references are included, drawn directly from the profile's `songs` object.
+
+#### `generate_tab`
+
+Input: `guitarist_id` (enum), `type` (`lead` | `rhythm`).
+
+Returns a single text block structured as:
+
+```
+<guitarist aiPrompt verbatim>
+
+━━ GENERATION TASK ━━
+Generate a LEAD / SOLO [or RHYTHM / RIFF] exercise in the style above.
+
+BPM range for lead: 110–192
+Tuning: E standard
+String names (high→low): e B G D A E
+
+KEY TECHNIQUES TO APPLY (LEAD):
+  1. Two-handed tapping: tap–pull–hammer triplet units...
+  2. EVH octatonic scale [0,1,3,4,6,7,9,10]...
+  ...
+
+━━ ASCII TAB FORMAT SPECIFICATION ━━
+GRID: 6 strings × 64 columns...
+[full format spec with examples]
+REQUIRED OUTPUT FORMAT — return ONLY this JSON object...
+```
+
+The `aiPrompt` field is included verbatim from the profile. It covers harmonic language, technique mechanics with fret-level specifics, phrasing philosophy, and concrete song-level examples. The technique list that follows is ordered by importance for the requested type. The format spec at the end provides the exact tab layout so no ambiguity remains.
+
+### Transport
+
+The server uses `StdioServerTransport` from `@modelcontextprotocol/sdk`. It reads JSON-RPC messages from stdin and writes responses to stdout. This makes it compatible with any MCP client that supports the stdio transport, regardless of which LLM the client is backed by.
+
+```js
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+### Extending the Server
+
+To expose a new guitarist, add its profile to `src/guitarists/`, import it in `mcp/index.js`, add entries to `STYLE_SUMMARIES` and `TECHNIQUES`, and add the ID to the `GUITARIST_ID` zod enum. The three tools will automatically include it.

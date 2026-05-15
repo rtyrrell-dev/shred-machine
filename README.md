@@ -45,6 +45,7 @@ Power chords, pedal tones, syncopated stabs, chugging patterns, double-stops, an
 | Build | Vite 8 |
 | Styling | Inline CSS-in-JS (`STYLES` constant), Google Fonts (Orbitron, Share Tech Mono) |
 | Audio | Web Audio API — sawtooth oscillator, gain envelope, procedural click track |
+| MCP Server | `@modelcontextprotocol/sdk` — exposes guitarist knowledge as tools for LLM integration |
 | Deployment | Vercel |
 
 No CSS framework, no audio library, no state management library. The project is a single React component (`src/App.jsx`) and five guitarist profile files.
@@ -64,6 +65,9 @@ shred-machine/
 │       ├── george-lynch.js  # George Lynch profile
 │       ├── puget.js         # Jade Puget profile
 │       └── ian-dsa.js       # Ian D'Sa profile
+├── mcp/
+│   ├── index.js             # MCP server — three knowledge tools for LLM integration
+│   └── package.json         # Separate package: @modelcontextprotocol/sdk, zod
 ├── index.html
 ├── vite.config.js
 ├── vercel.json
@@ -73,6 +77,54 @@ shred-machine/
 Each guitarist file exports a profile object containing:
 - Metadata: `name`, `band`, `color`
 - Music data: scales, positions, tap patterns, rhythm progressions, BPM ranges, open-string MIDI values
+- `aiPrompt`: a detailed style prompt consumed by the MCP server's `generate_tab` tool
+
+---
+
+## MCP Server
+
+Shred Machine ships an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes guitarist knowledge as tools any MCP-compatible client can call. The server imports the same guitarist profiles used by the web app and serves them as structured data. It makes no external API calls — it only provides knowledge. The LLM does the tab generation.
+
+### Tools
+
+| Tool | Input | Returns |
+|------|-------|---------|
+| `list_guitarists` | _(none)_ | All five guitarist IDs with name, band, era, tuning, and style summary |
+| `get_guitarist_profile` | `guitarist_id` | Deep profile: MIDI tuning, scale interval arrays, BPM ranges, technique lists, song references |
+| `generate_tab` | `guitarist_id`, `type` (`lead`\|`rhythm`) | Full style prompt with fret-level technique specifics, prioritized technique list for the requested type, BPM range, and the complete ASCII tab format specification |
+
+### Setup
+
+```bash
+cd mcp
+npm install
+node index.js   # communicates over stdio
+```
+
+### Client Configuration
+
+The server uses the MCP stdio transport. Add it to any MCP-compatible client using the standard server configuration format:
+
+```json
+{
+  "mcpServers": {
+    "shred-machine": {
+      "command": "node",
+      "args": ["/absolute/path/to/shred-machine/mcp/index.js"]
+    }
+  }
+}
+```
+
+### Intended Workflow
+
+1. Call `list_guitarists` to see available styles.
+2. Optionally call `get_guitarist_profile` to inspect a guitarist's harmonic vocabulary and techniques.
+3. Call `generate_tab` with a guitarist ID and type. The response contains everything an LLM needs to produce an authentic 4-measure ASCII tab exercise. The expected output format from the LLM is:
+
+```json
+{"tab": "<6-line ASCII tab>", "bpm": <integer>, "label": "<short label>"}
+```
 
 ---
 
