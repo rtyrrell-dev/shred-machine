@@ -14,11 +14,9 @@ This document covers internal architecture, data flow, algorithms, and implement
 6. [Generation Pipeline](#6-generation-pipeline)
 7. [Guitarist Generators](#7-guitarist-generators)
 8. [Audio Pipeline](#8-audio-pipeline)
-9. [AI Generation Flow](#9-ai-generation-flow)
-10. [Guitarist Profile Schema](#10-guitarist-profile-schema)
-11. [State Management](#11-state-management)
-12. [Styling System](#12-styling-system)
-13. [API Endpoint](#13-api-endpoint)
+9. [Guitarist Profile Schema](#9-guitarist-profile-schema)
+10. [State Management](#10-state-management)
+11. [Styling System](#11-styling-system)
 
 ---
 
@@ -28,20 +26,17 @@ This document covers internal architecture, data flow, algorithms, and implement
 src/
 ├── App.jsx                ← monolith: all generators, all UI, all audio
 └── guitarists/
-    ├── evh.js             ← data + aiPrompt
+    ├── evh.js             ← data
     ├── demartini.js
     ├── george-lynch.js
     ├── puget.js
     └── ian-dsa.js
-
-api/
-└── generate.js            ← Vercel serverless function (Claude proxy)
 ```
 
 The entire frontend lives in `App.jsx`. There is no router, no global state library, no CSS framework, and no audio library. The file has three logical sections:
 
-1. **Global scope** — utility functions, scale constants, generator functions, `GEN_MAP` and `PROFILE_MAP` lookup objects
-2. **React components** — `Panel`, `ModeToggle`, `GuitaristBar`, and the root `App`
+1. **Global scope** — utility functions, scale constants, generator functions, `GEN_MAP` lookup object
+2. **React components** — `Panel`, `GuitaristBar`, and the root `App`
 3. **`STYLES` constant** — ~650 characters of minified CSS injected via `<style>` at runtime
 
 The generators are plain functions in module scope, not hooks or class methods. This means they can be called, tested, and reasoned about independently of React.
@@ -52,10 +47,9 @@ The generators are plain functions in module scope, not hooks or class methods. 
 
 ```
 App
-├── ModeToggle          ← "Local / AI" toggle, persists to localStorage
 ├── GuitaristBar        ← multi-select up to 3 guitarists; "rnd" resets to Random
 └── Panel (×2)          ← one instance for "lead", one for "rhythm"
-    ├── Generate button  ← triggers local or AI generation
+    ├── Generate button  ← triggers generation
     ├── Meta bar         ← BPM badge, label badge (guitarist color), beat dots
     ├── Progress bar     ← filled via 50ms setInterval during playback
     ├── Tab box          ← monospace pre-formatted ASCII tab display
@@ -400,55 +394,7 @@ A new `AudioContext` is created each time playback starts. This avoids the brows
 
 ---
 
-## 9. AI Generation Flow
-
-```
-aiGenerate() [async]
-  1. abort any in-flight request
-  2. setAiLoading(true), clear current tab
-  3. pick one guitarist from resolveIds(sel)
-  4. POST /api/generate with prof.aiPrompt + instructions
-  5a. on success: parse JSON from response text, display tab
-  5b. on error:   fall back to generateExercise(), append " [local]" to label
-  5c. on abort:   do nothing (user cancelled)
-  6. setAiLoading(false)
-```
-
-### Request Body
-
-```json
-{
-  "model": "claude-sonnet-4-6",
-  "max_tokens": 1024,
-  "messages": [{
-    "role": "user",
-    "content": "<aiPrompt from guitarist profile>\n\nGenerate a lead/solo guitar tab...\nReturn ONLY a JSON object..."
-  }]
-}
-```
-
-The `aiPrompt` is a comprehensive multi-section string in the guitarist profile. It includes scale/mode vocabulary, technique descriptions with fret-level specifics, rhythm patterns, and song examples. The model is instructed to return `{"tab":"...","bpm":N,"label":"..."}`.
-
-### Response Parsing
-
-```js
-const raw = data.content[0].text;
-const json = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] ?? '{}');
-```
-
-A regex extracts the first `{...}` block from the response, tolerating any surrounding explanation text the model might output despite the "return ONLY JSON" instruction. If `json.tab` is missing, an error is thrown and the local fallback runs.
-
-### AI-Generated Tab Limitations
-
-AI-generated tabs are displayed but **not** converted to audio events. The `hasAudio` flag remains `false` after AI generation, so the Play button is disabled. Only locally-generated tabs have synchronized audio playback. This is by design — parsing arbitrary Claude-generated ASCII tab back into note events is not implemented.
-
-### AbortController
-
-Each `aiGenerate` call creates a new `AbortController` stored in `abortRef`. Before starting a new generation, the previous controller is aborted. The catch block skips the local fallback if the error is an `AbortError`, preventing a stale local result from appearing after a cancelled AI request.
-
----
-
-## 10. Guitarist Profile Schema
+## 9. Guitarist Profile Schema
 
 Each file in `src/guitarists/` exports a profile object with this structure:
 
@@ -472,13 +418,10 @@ Each file in `src/guitarists/` exports a profile object with this structure:
   rhythmProgressions: object,
   rhythmPatterns: number[][],  // column offsets within a 16-col measure
   songs: object,           // song reference data (not used by generators directly)
-  aiPrompt: string,        // verbatim Claude prompt
 }
 ```
 
-The profile serves double duty: the data properties drive the local generators, and `aiPrompt` drives AI generation. Both point at the same musical facts, maintaining consistency.
-
-### `GEN_MAP` and `PROFILE_MAP`
+### `GEN_MAP`
 
 ```js
 const GEN_MAP = {
@@ -488,30 +431,23 @@ const GEN_MAP = {
   jade: { lead: jade_lead, rhythm: jade_rhythm, open: JADE.open, dd: false, ... },
   ian:  { lead: ian_lead,  rhythm: ian_rhythm,  open: IAN.open,  dd: true,  ... },
 };
-
-const PROFILE_MAP = { evh: EVH, dem: DEM, lnch: LNCH, jade: JADE, ian: IAN };
 ```
 
-`GEN_MAP` is used by `generateExercise` (local generation). `PROFILE_MAP` is used by `aiGenerate` (AI generation). Both are keyed by guitarist ID.
+Keyed by guitarist ID. `generateExercise` looks up the guitarist's generator functions, open-string tuning, Drop D flag, and BPM ranges from this map.
 
 ---
 
-## 11. State Management
+## 10. State Management
 
 All state is `useState` inside the two `Panel` instances and the root `App`. There is no global state. The two panels are fully isolated.
 
 ### `App` State
 
 ```js
-const [sel, setSel] = useState(['rnd']);        // selected guitarist IDs
-const [aiMode, setAiMode] = useState(          // persisted to localStorage
-  () => localStorage.getItem('smMode') === 'ai'
-);
+const [sel, setSel] = useState(['rnd']);  // selected guitarist IDs
 ```
 
 `sel` is an array of guitarist IDs. The only special value is `'rnd'` (Random). When the user selects a real guitarist, `'rnd'` is removed. When the last real guitarist is deselected, the selection resets to `['rnd']`. Up to 3 real guitarists can be selected simultaneously.
-
-`aiMode` is the one piece of persisted state — it survives page refresh via `localStorage`.
 
 ### `Panel` State
 
@@ -525,7 +461,6 @@ const [progress, setProgress] = useState(0);
 const [beat, setBeat] = useState(-1);
 const [guitId, setGuitId] = useState('');
 const [hasAudio, setHasAudio] = useState(false);
-const [aiLoading, setAiLoading] = useState(false);
 ```
 
 ### Refs
@@ -537,14 +472,13 @@ const nodesRef = useRef([]);      // all scheduled audio nodes + timeout handles
 const progRef = useRef(null);     // setInterval ID for progress bar
 const startRef = useRef(null);    // playback start timestamp (Date.now())
 const durRef = useRef(null);      // playback duration in seconds
-const abortRef = useRef(null);    // AbortController for in-flight AI requests
 ```
 
 `audioRef` holds the current audio events but is not state because updating it doesn't need to trigger a re-render — it's only read at playback start.
 
 ---
 
-## 12. Styling System
+## 11. Styling System
 
 All CSS is a single string constant `STYLES` at the top of `App.jsx`, injected via `<style>{STYLES}</style>` in the root render. It is not minified by any build tool — it is pre-minified by hand (or written minified). Vite does not process it further.
 
@@ -553,7 +487,6 @@ All CSS is a single string constant `STYLES` at the top of `App.jsx`, injected v
 - Background: `#000000`
 - Lead accent: `#ff2d78` (hot pink/magenta)
 - Rhythm accent: `#00f5ff` (cyan)
-- AI mode accent: `#b44fff` (purple)
 - Text: `#eeeeee` / `#888888` for secondary
 - Fonts: Orbitron (display, loaded from Google Fonts) + Share Tech Mono (monospace body)
 - Animations: `flicker` (logo opacity flicker), `pulse-pink` / `pulse-cyan` (glow text-shadow oscillation), `spin`
@@ -573,39 +506,3 @@ style={{ '--gc': g.color }}
 ### Responsive Layout
 
 The two panels are in a CSS Grid with `grid-template-columns: 1fr 1fr`. A `@media(max-width:680px)` breakpoint switches to `1fr`, stacking the panels vertically.
-
----
-
-## 13. API Endpoint
-
-**File:** `api/generate.js`
-
-**Route:** `POST /api/generate`
-
-This is a thin Vercel serverless function that proxies requests to the Anthropic API. It adds the server-side `ANTHROPIC_API_KEY` header, which is never exposed to the browser.
-
-```js
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
-
-  const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify(req.body),
-  });
-
-  const data = await upstream.json();
-  return res.status(upstream.status).json(data);
-}
-```
-
-The function passes through the upstream status code verbatim. A 429 rate limit or 529 overload from Anthropic will reach the client as-is, where the `aiGenerate` catch block will trigger the local fallback.
-
-`vercel.json` rewrites `/api/(.*)` to `/api/$1`, which routes the request to this handler in production. In local development, Vite does not handle the `/api/` path — the dev server must be run via `vercel dev` for AI mode to work locally, or the route can be proxied manually in `vite.config.js`.

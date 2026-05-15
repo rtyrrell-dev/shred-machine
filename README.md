@@ -1,6 +1,6 @@
 # Shred Machine
 
-An interactive guitar practice generator that creates randomized lead and rhythm exercises in the styles of iconic rock and metal guitarists. Generate ASCII tablature, hear it played back through a synthesizer, and optionally upgrade generation with Claude AI.
+An interactive guitar practice generator that creates randomized lead and rhythm exercises in the styles of iconic rock and metal guitarists. Generate ASCII tablature and hear it played back through a synthesizer.
 
 **Live:** [shred-machine.vercel.app](https://shred-machine.vercel.app)
 
@@ -8,12 +8,7 @@ An interactive guitar practice generator that creates randomized lead and rhythm
 
 ## What It Does
 
-Shred Machine has two generation modes:
-
-- **Local** — Procedural algorithms generate tab from hardcoded patterns, scale data, and music theory rules for each guitarist. No API key required.
-- **AI** — The same guitarist profiles are sent to Claude (claude-sonnet-4-6) via a Vercel serverless function. Claude returns a JSON object `{ tab, bpm, label }` that replaces the locally-generated tab. Falls back silently to local generation on any API error.
-
-Each generated exercise displays as ASCII tablature (6 strings × 64 columns = 4 measures of 16th notes), plays back through the Web Audio API using a sawtooth oscillator, and can be printed as a PDF.
+Shred Machine procedurally generates guitar tab from hardcoded patterns, scale data, and music theory rules for each guitarist. Each generated exercise displays as ASCII tablature (6 strings × 64 columns = 4 measures of 16th notes), plays back through the Web Audio API using a sawtooth oscillator, and can be printed as a PDF.
 
 ---
 
@@ -50,8 +45,7 @@ Power chords, pedal tones, syncopated stabs, chugging patterns, double-stops, an
 | Build | Vite 8 |
 | Styling | Inline CSS-in-JS (`STYLES` constant), Google Fonts (Orbitron, Share Tech Mono) |
 | Audio | Web Audio API — sawtooth oscillator, gain envelope, procedural click track |
-| AI | Anthropic Claude API (claude-sonnet-4-6), proxied through a Vercel serverless function |
-| Deployment | Vercel (static frontend + Node.js API route) |
+| Deployment | Vercel |
 
 No CSS framework, no audio library, no state management library. The project is a single React component (`src/App.jsx`) and five guitarist profile files.
 
@@ -61,8 +55,6 @@ No CSS framework, no audio library, no state management library. The project is 
 
 ```
 shred-machine/
-├── api/
-│   └── generate.js          # Vercel serverless function — proxies Claude API calls
 ├── src/
 │   ├── App.jsx              # Main component: all generators, UI, audio, playback logic
 │   ├── main.jsx             # React entry point
@@ -81,7 +73,6 @@ shred-machine/
 Each guitarist file exports a profile object containing:
 - Metadata: `name`, `band`, `color`
 - Music data: scales, positions, tap patterns, rhythm progressions, BPM ranges, open-string MIDI values
-- `aiPrompt`: a detailed system prompt sent to Claude in AI mode
 
 ---
 
@@ -90,7 +81,6 @@ Each guitarist file exports a profile object containing:
 ### Prerequisites
 
 - Node.js 16+
-- An Anthropic API key (only required for AI mode)
 
 ### Install and Run
 
@@ -99,16 +89,6 @@ npm install
 npm run dev
 # → http://localhost:5173
 ```
-
-### Environment Variables
-
-For AI mode to work, create a `.env.local` file:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-On Vercel, add this as a project environment variable in the dashboard. The `/api/generate` serverless function reads it server-side — the key is never exposed to the browser.
 
 ### Other Scripts
 
@@ -122,18 +102,13 @@ npm run lint     # ESLint check
 
 ## Deployment
 
-The project deploys to Vercel as a static SPA with one serverless function.
-
-- Frontend assets are served from the Vercel Edge Network.
-- `POST /api/generate` runs as a Node.js serverless function that proxies requests to `https://api.anthropic.com/v1/messages`.
-- `vercel.json` rewrites `/api/*` to the function handler.
+The project deploys to Vercel as a static SPA.
 
 To deploy your own instance:
 
 1. Push the repo to GitHub.
 2. Import it in the Vercel dashboard.
-3. Add `ANTHROPIC_API_KEY` to the project's environment variables.
-4. Deploy.
+3. Deploy.
 
 ---
 
@@ -179,6 +154,6 @@ All interval arithmetic operates in semitones, making alternate tunings transpar
 ## Adding a New Guitarist
 
 1. Create `src/guitarists/yourname.js` following the structure of an existing profile.
-2. Define `name`, `band`, `color`, `open` (MIDI array), `bpmLead`, `bpmRhythm`, scales, positions, patterns, and `aiPrompt`.
+2. Define `name`, `band`, `color`, `open` (MIDI array), `bpmLead`, `bpmRhythm`, scales, positions, and patterns.
 3. Import it in `src/App.jsx` and add it to the `GUITARISTS` array.
 4. Write `yourname_lead()` and `yourname_rhythm()` generator functions in `App.jsx`.
