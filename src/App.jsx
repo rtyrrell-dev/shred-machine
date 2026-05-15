@@ -5,7 +5,7 @@ import LNCH from './guitarists/george-lynch.js';
 import JADE from './guitarists/puget.js';
 import IAN  from './guitarists/ian-dsa.js';
 
-const STYLES = `@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap'); @keyframes flicker{0%,100%{opacity:1}93%{opacity:.7}94%{opacity:1}97%{opacity:.9}} @keyframes pulse-pink{0%,100%{text-shadow:0 0 8px #ff2d78,0 0 20px #ff2d78}50%{text-shadow:0 0 18px #ff2d78,0 0 40px #ff2d78,0 0 60px #ff2d78}} @keyframes pulse-cyan{0%,100%{text-shadow:0 0 8px #00f5ff,0 0 20px #00f5ff}50%{text-shadow:0 0 18px #00f5ff,0 0 40px #00f5ff,0 0 60px #00f5ff}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} .root{background:#000;min-height:100vh;font-family:'Share Tech Mono',monospace;color:#eee;padding:0 0 2rem;position:relative;} .scanlines{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);} .logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(1.6rem,4.5vw,3rem);text-align:center;letter-spacing:.12em;color:#fff;animation:flicker 5s infinite;padding:1.2rem 0 .2rem;text-shadow:0 0 10px #ff2d78,0 0 30px #ff2d78,0 0 5px #fff;} .tagline{text-align:center;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.8rem;text-transform:uppercase;} .guitarist-bar{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;padding:.4rem 1rem .8rem;position:relative;z-index:1;} .g-btn{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.25rem .5rem;border:1px solid #444;border-radius:2px;background:transparent;color:#888;cursor:pointer;text-transform:uppercase;transition:all .15s;} .g-btn:hover{border-color:#aaa;color:#eee;} .g-btn.sel{border-color:var(--gc);color:var(--gc);background:color-mix(in srgb,var(--gc) 15%,transparent);} .g-btn.random-btn{border-color:#b44fff;color:#b44fff;} .sel-hint{font-size:.58rem;color:#555;text-align:center;letter-spacing:.1em;margin-bottom:.5rem;} .panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:0 .8rem;position:relative;z-index:1;} @media(max-width:680px){.panels{grid-template-columns:1fr}} .panel{border:1px solid;border-radius:4px;padding:.9rem;background:rgba(0,0,0,.85);} .panel-lead{border-color:#ff2d78;box-shadow:0 0 12px rgba(255,45,120,.25),inset 0 0 20px rgba(255,45,120,.04);} .panel-rhythm{border-color:#00f5ff;box-shadow:0 0 12px rgba(0,245,255,.25),inset 0 0 20px rgba(0,245,255,.04);} .panel-title{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.25rem;} .tl{color:#ff2d78;animation:pulse-pink 2.5s ease-in-out infinite;} .tr{color:#00f5ff;animation:pulse-cyan 2.5s ease-in-out infinite;} .panel-sub{font-size:.58rem;letter-spacing:.12em;color:#555;margin-bottom:.7rem;text-transform:uppercase;} .gen-btn{width:100%;padding:.5rem 0;font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.12em;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;border:1px solid;} .gen-l{background:rgba(255,45,120,.1);color:#ff2d78;border-color:#ff2d78;} .gen-l:hover{background:rgba(255,45,120,.22);box-shadow:0 0 14px rgba(255,45,120,.4);} .gen-r{background:rgba(0,245,255,.08);color:#00f5ff;border-color:#00f5ff;} .gen-r:hover{background:rgba(0,245,255,.18);box-shadow:0 0 14px rgba(0,245,255,.4);} .meta{display:flex;align-items:center;gap:.4rem;margin:.6rem 0 .3rem;font-size:.65rem;flex-wrap:wrap;} .badge{padding:2px 7px;border-radius:2px;font-size:.6rem;letter-spacing:.08em;} .bl{background:rgba(255,45,120,.18);color:#ff2d78;border:1px solid rgba(255,45,120,.45);} .br{background:rgba(0,245,255,.12);color:#00f5ff;border:1px solid rgba(0,245,255,.35);} .beat-dots{display:flex;gap:5px;align-items:center;margin-left:auto;} .dot{width:9px;height:9px;border-radius:50%;border:1px solid;transition:background .06s;} .dl{border-color:#ff2d78;}.dl.on{background:#ff2d78;box-shadow:0 0 7px #ff2d78;} .dr{border-color:#00f5ff;}.dr.on{background:#00f5ff;box-shadow:0 0 7px #00f5ff;} .prog-wrap{height:3px;background:#111;border-radius:2px;margin:.45rem 0 .35rem;overflow:hidden;} .prog{height:100%;border-radius:2px;} .pl{background:linear-gradient(90deg,#ff2d78,#ff6bab);} .pr{background:linear-gradient(90deg,#00f5ff,#7ef5ff);} .tab-box{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:3px;padding:.55rem .45rem;margin:.4rem 0;font-family:'Share Tech Mono',monospace;font-size:clamp(.54rem,1.3vw,.7rem);line-height:1.65;overflow-x:auto;min-height:85px;white-space:pre;} .tab-l{color:#ff8ab8;}.tab-r{color:#7ef5ff;} .ctrl{display:flex;gap:.4rem;margin-top:.55rem;flex-wrap:wrap;} .cb{padding:.25rem .6rem;font-size:.6rem;font-family:'Share Tech Mono',monospace;border-radius:2px;cursor:pointer;letter-spacing:.07em;border:1px solid;background:transparent;transition:all .15s;text-transform:uppercase;} .cbl{color:#ff2d78;border-color:rgba(255,45,120,.45);}.cbl:hover{background:rgba(255,45,120,.13);} .cbl.on{background:rgba(255,45,120,.22);box-shadow:0 0 7px rgba(255,45,120,.35);} .cbr{color:#00f5ff;border-color:rgba(0,245,255,.35);}.cbr:hover{background:rgba(0,245,255,.1);} .cbr.on{background:rgba(0,245,255,.18);box-shadow:0 0 7px rgba(0,245,255,.28);} .cb:disabled{opacity:.3;cursor:not-allowed;} .type-tag{font-size:.62rem;padding:1px 6px;border-radius:2px;} .mode-bar{display:flex;justify-content:center;align-items:center;gap:.5rem;padding:.2rem 0 .65rem;position:relative;z-index:1;} .mode-label{font-size:.55rem;letter-spacing:.2em;color:#444;text-transform:uppercase;} .mode-toggle{display:flex;border:1px solid #252525;border-radius:3px;overflow:hidden;} .mode-sep{width:1px;background:#252525;flex-shrink:0;} .mode-opt{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.1em;padding:.3rem .8rem;border:none;background:transparent;color:#444;cursor:pointer;text-transform:uppercase;transition:all .15s;} .mode-opt:hover:not(.mode-local):not(.mode-ai){color:#777;} .mode-local{background:rgba(0,245,255,.1);color:#00f5ff;} .mode-ai{background:rgba(180,79,255,.14);color:#b44fff;} .ai-loading{color:#b44fff;font-size:.62rem;letter-spacing:.1em;}`;
+const STYLES = `@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap'); @keyframes flicker{0%,100%{opacity:1}93%{opacity:.7}94%{opacity:1}97%{opacity:.9}} @keyframes pulse-pink{0%,100%{text-shadow:0 0 8px #ff2d78,0 0 20px #ff2d78}50%{text-shadow:0 0 18px #ff2d78,0 0 40px #ff2d78,0 0 60px #ff2d78}} @keyframes pulse-cyan{0%,100%{text-shadow:0 0 8px #00f5ff,0 0 20px #00f5ff}50%{text-shadow:0 0 18px #00f5ff,0 0 40px #00f5ff,0 0 60px #00f5ff}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} .root{background:#000;min-height:100vh;font-family:'Share Tech Mono',monospace;color:#eee;padding:0 0 2rem;position:relative;} .scanlines{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);} .logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(1.6rem,4.5vw,3rem);text-align:center;letter-spacing:.12em;color:#fff;animation:flicker 5s infinite;padding:1.2rem 0 .2rem;text-shadow:0 0 10px #ff2d78,0 0 30px #ff2d78,0 0 5px #fff;} .tagline{text-align:center;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.8rem;text-transform:uppercase;} .guitarist-bar{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;padding:.4rem 1rem .8rem;position:relative;z-index:1;} .g-btn{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.25rem .5rem;border:1px solid #444;border-radius:2px;background:transparent;color:#888;cursor:pointer;text-transform:uppercase;transition:all .15s;} .g-btn:hover{border-color:#aaa;color:#eee;} .g-btn.sel{border-color:var(--gc);color:var(--gc);background:color-mix(in srgb,var(--gc) 15%,transparent);} .g-btn.random-btn{border-color:#b44fff;color:#b44fff;} .sel-hint{font-size:.58rem;color:#555;text-align:center;letter-spacing:.1em;margin-bottom:.5rem;} .panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:0 .8rem;position:relative;z-index:1;} @media(max-width:680px){.panels{grid-template-columns:1fr}} .panel{border:1px solid;border-radius:4px;padding:.9rem;background:rgba(0,0,0,.85);} .panel-lead{border-color:#ff2d78;box-shadow:0 0 12px rgba(255,45,120,.25),inset 0 0 20px rgba(255,45,120,.04);} .panel-rhythm{border-color:#00f5ff;box-shadow:0 0 12px rgba(0,245,255,.25),inset 0 0 20px rgba(0,245,255,.04);} .panel-title{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.25rem;} .tl{color:#ff2d78;animation:pulse-pink 2.5s ease-in-out infinite;} .tr{color:#00f5ff;animation:pulse-cyan 2.5s ease-in-out infinite;} .panel-sub{font-size:.58rem;letter-spacing:.12em;color:#555;margin-bottom:.7rem;text-transform:uppercase;} .gen-btn{width:100%;padding:.5rem 0;font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.12em;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;border:1px solid;} .gen-l{background:rgba(255,45,120,.1);color:#ff2d78;border-color:#ff2d78;} .gen-l:hover{background:rgba(255,45,120,.22);box-shadow:0 0 14px rgba(255,45,120,.4);} .gen-r{background:rgba(0,245,255,.08);color:#00f5ff;border-color:#00f5ff;} .gen-r:hover{background:rgba(0,245,255,.18);box-shadow:0 0 14px rgba(0,245,255,.4);} .meta{display:flex;align-items:center;gap:.4rem;margin:.6rem 0 .3rem;font-size:.65rem;flex-wrap:wrap;} .badge{padding:2px 7px;border-radius:2px;font-size:.6rem;letter-spacing:.08em;} .bl{background:rgba(255,45,120,.18);color:#ff2d78;border:1px solid rgba(255,45,120,.45);} .br{background:rgba(0,245,255,.12);color:#00f5ff;border:1px solid rgba(0,245,255,.35);} .beat-dots{display:flex;gap:5px;align-items:center;margin-left:auto;} .dot{width:9px;height:9px;border-radius:50%;border:1px solid;transition:background .06s;} .dl{border-color:#ff2d78;}.dl.on{background:#ff2d78;box-shadow:0 0 7px #ff2d78;} .dr{border-color:#00f5ff;}.dr.on{background:#00f5ff;box-shadow:0 0 7px #00f5ff;} .prog-wrap{height:3px;background:#111;border-radius:2px;margin:.45rem 0 .35rem;overflow:hidden;} .prog{height:100%;border-radius:2px;} .pl{background:linear-gradient(90deg,#ff2d78,#ff6bab);} .pr{background:linear-gradient(90deg,#00f5ff,#7ef5ff);} .tab-box{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:3px;padding:.55rem .45rem;margin:.4rem 0;font-family:'Share Tech Mono',monospace;font-size:clamp(.54rem,1.3vw,.7rem);line-height:1.65;overflow-x:auto;min-height:85px;white-space:pre;} .tab-l{color:#ff8ab8;}.tab-r{color:#7ef5ff;} .ctrl{display:flex;gap:.4rem;margin-top:.55rem;flex-wrap:wrap;} .cb{padding:.25rem .6rem;font-size:.6rem;font-family:'Share Tech Mono',monospace;border-radius:2px;cursor:pointer;letter-spacing:.07em;border:1px solid;background:transparent;transition:all .15s;text-transform:uppercase;} .cbl{color:#ff2d78;border-color:rgba(255,45,120,.45);}.cbl:hover{background:rgba(255,45,120,.13);} .cbl.on{background:rgba(255,45,120,.22);box-shadow:0 0 7px rgba(255,45,120,.35);} .cbr{color:#00f5ff;border-color:rgba(0,245,255,.35);}.cbr:hover{background:rgba(0,245,255,.1);} .cbr.on{background:rgba(0,245,255,.18);box-shadow:0 0 7px rgba(0,245,255,.28);} .cb:disabled{opacity:.3;cursor:not-allowed;} .type-tag{font-size:.62rem;padding:1px 6px;border-radius:2px;}`;
 
 // ── Tunings ───────────────────────────────────────────────────────────────────
 const STD   = [40,45,50,55,59,64]; // E A D G B e
@@ -728,8 +728,6 @@ const GEN_MAP={
   ian: {lead:ian_lead, rhythm:ian_rhythm, open:IAN.open,   dd:true,  bpmL:IAN.bpmLead,  bpmR:IAN.bpmRhythm},
 };
 
-const PROFILE_MAP = {evh:EVH, dem:DEM, lnch:LNCH, jade:JADE, ian:IAN};
-
 function resolveIds(sel){
   const real=sel.filter(x=>x!=='rnd');
   if(!real.length) return [pick(Object.keys(GEN_MAP))];
@@ -788,16 +786,15 @@ function startPlay({audioEvents,bpm,clickOn,onBeat,onDone,ctxRef,nodesRef}){
 }
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
-function Panel({type,sel,aiMode}){
+function Panel({type,sel}){
   const isLead=type==='lead'; const cls=isLead?'lead':'rhythm';
   const [tab,setTab]=useState(''); const [bpm,setBpm]=useState(null);
   const [label,setLabel]=useState(''); const [playing,setPlaying]=useState(false);
   const [clickOn,setClickOn]=useState(true); const [progress,setProgress]=useState(0);
   const [beat,setBeat]=useState(-1); const [guitId,setGuitId]=useState('');
-  const [hasAudio,setHasAudio]=useState(false); const [aiLoading,setAiLoading]=useState(false);
+  const [hasAudio,setHasAudio]=useState(false);
   const audioRef=useRef(null); const ctxRef=useRef(null); const nodesRef=useRef([]);
   const progRef=useRef(null); const startRef=useRef(null); const durRef=useRef(null);
-  const abortRef=useRef(null);
 
   const stopAll=useCallback(()=>{
     clearInterval(progRef.current);
@@ -805,43 +802,13 @@ function Panel({type,sel,aiMode}){
     nodesRef.current=[]; try{ctxRef.current?.close();}catch(e){} ctxRef.current=null;
     setPlaying(false); setProgress(0); setBeat(-1);
   },[]);
-  useEffect(()=>()=>{stopAll();abortRef.current?.abort();},[stopAll]);
+  useEffect(()=>()=>{stopAll();},[stopAll]);
 
   const generate=()=>{
-    stopAll(); abortRef.current?.abort();
+    stopAll();
     const ex=generateExercise(sel,isLead);
     setTab(ex.tab); setBpm(ex.bpm); setLabel(ex.label); setGuitId(ex.guitId);
     audioRef.current=ex.audioEvents; setHasAudio(true);
-  };
-
-  const aiGenerate=async()=>{
-    stopAll(); abortRef.current?.abort();
-    abortRef.current=new AbortController();
-    setAiLoading(true); setTab(''); setBpm(null); setLabel(''); setGuitId(''); setHasAudio(false);
-    audioRef.current=null;
-    const ids=resolveIds(sel); const id=pick(ids);
-    const prof=PROFILE_MAP[id];
-    try{
-      const res=await fetch('/api/generate',{
-        method:'POST', signal:abortRef.current.signal,
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          model:'claude-sonnet-4-6', max_tokens:1024,
-          messages:[{role:'user',content:`${prof.aiPrompt}\n\nGenerate a ${isLead?'lead/solo':'rhythm/riff'} guitar tab exercise in the style above.\nReturn ONLY a JSON object, no other text:\n{"tab":"<6-line ASCII tab, 4 measures of 16 columns each, string names e B G D A E>","bpm":<integer>,"label":"<short label>"}`}]
-        })
-      });
-      const data=await res.json();
-      if(data.error) throw new Error(typeof data.error==='string'?data.error:data.error?.message||'API error');
-      const raw=data.content[0].text;
-      const json=JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0]??'{}');
-      if(!json.tab) throw new Error('no tab in response');
-      setTab(json.tab); setBpm(json.bpm??120); setLabel(json.label??`${prof.name} AI`); setGuitId(id);
-    }catch(e){
-      if(e.name==='AbortError') return;
-      const ex=generateExercise(sel,isLead);
-      setTab(ex.tab); setBpm(ex.bpm); setLabel(ex.label+' [local]'); setGuitId(ex.guitId);
-      audioRef.current=ex.audioEvents; setHasAudio(true);
-    }finally{ setAiLoading(false); }
   };
 
   const playStop=()=>{
@@ -869,12 +836,9 @@ function Panel({type,sel,aiMode}){
       <div className="panel-sub">{isLead?'Lead · Solo · Melody':'Riff · Groove · Rhythm'}</div>
       <button
         className={`gen-btn gen-${side}`}
-        style={aiMode?{borderColor:'#b44fff',color:'#b44fff',background:'rgba(180,79,255,.1)'}:{}}
-        onClick={aiMode?aiGenerate:generate}
-        disabled={aiLoading}
+        onClick={generate}
       >
-        {aiLoading?<span className="ai-loading">◌ Generating with AI...</span>
-          :`▶ Generate ${isLead?'Lead':'Rhythm'} ${aiMode?'[AI]':'Exercise'}`}
+        {`▶ Generate ${isLead?'Lead':'Rhythm'} Exercise`}
       </button>
       <div className="meta">
         {bpm&&<span className={`badge b${side}`}>{bpm} BPM</span>}
@@ -887,20 +851,6 @@ function Panel({type,sel,aiMode}){
         <button className={`cb cb${side}${playing?' on':''}`} onClick={playStop} disabled={!tab||!hasAudio}>{playing?'■ Stop':'▶ Play'}</button>
         <button className={`cb cb${side}${clickOn?' on':''}`} onClick={()=>setClickOn(v=>!v)} disabled={playing}>{clickOn?'✓ Click':'✗ Click'}</button>
         <button className={`cb cb${side}`} onClick={exportPdf} disabled={!tab}>⬇ PDF</button>
-      </div>
-    </div>
-  );
-}
-
-// ── Mode Toggle ───────────────────────────────────────────────────────────────
-function ModeToggle({aiMode,setAiMode}){
-  return(
-    <div className="mode-bar">
-      <span className="mode-label">Mode</span>
-      <div className="mode-toggle">
-        <button className={`mode-opt${!aiMode?' mode-local':''}`} onClick={()=>setAiMode(false)}>Local</button>
-        <div className="mode-sep"/>
-        <button className={`mode-opt${aiMode?' mode-ai':''}`} onClick={()=>setAiMode(true)}>AI</button>
       </div>
     </div>
   );
@@ -942,9 +892,6 @@ function GuitaristBar({sel,setSel}){
 
 export default function App(){
   const [sel,setSel]=useState(['rnd']);
-  const [aiMode,setAiMode]=useState(()=>localStorage.getItem('smMode')==='ai');
-
-  const handleSetAiMode=v=>{ setAiMode(v); localStorage.setItem('smMode',v?'ai':'local'); };
 
   return(
     <>
@@ -953,11 +900,10 @@ export default function App(){
         <div className="scanlines"/>
         <div className="logo">⚡ SHRED MACHINE ⚡</div>
         <div className="tagline">Guitar Practice System v2.0 — EST. 1984</div>
-        <ModeToggle aiMode={aiMode} setAiMode={handleSetAiMode}/>
         <GuitaristBar sel={sel} setSel={setSel}/>
         <div className="panels">
-          <Panel type="lead" sel={sel} aiMode={aiMode}/>
-          <Panel type="rhythm" sel={sel} aiMode={aiMode}/>
+          <Panel type="lead" sel={sel}/>
+          <Panel type="rhythm" sel={sel}/>
         </div>
       </div>
     </>
