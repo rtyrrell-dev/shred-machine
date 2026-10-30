@@ -36,7 +36,7 @@ test("valid ids and types are accepted", async () => {
 });
 
 test("guitarist_id outside the allowlist is rejected", async () => {
-  const bad = ["../../etc/passwd", "..\..\windows", "__proto__", "constructor", "toString", "EVH", "evh ", "", "evh\u0000", 1, null, ["evh"], {}];
+  const bad = ["../../etc/passwd", "..\\..\\windows", "__proto__", "constructor", "toString", "EVH", "evh ", "", "evh\u0000", 1, null, ["evh"], {}];
   for (const guitarist_id of bad) {
     assert.ok(await rejected("get_guitarist_profile", { guitarist_id }), JSON.stringify(guitarist_id));
     assert.ok(await rejected("generate_tab", { guitarist_id, type: "lead" }), JSON.stringify(guitarist_id));
