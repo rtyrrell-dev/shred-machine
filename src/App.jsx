@@ -92,7 +92,7 @@ function pwrE(rf,open,dd) {
   if(dd&&rf<=14) return[[0,rf],[1,rf],[2,rf]];
   return[[0,rf],[1,clamp(rf+2,0,22)],[2,clamp(rf+2,0,22)]];
 }
-function pwrA(rf,open) {
+function pwrA(rf) {
   return[[1,rf],[2,clamp(rf+2,0,22)],[3,clamp(rf+2,0,22)]];
 }
 function addPwr(ev,col,ch){ ch.forEach(([s,f])=>ev.push({col,str:s,fret:f})); }
@@ -164,7 +164,7 @@ function evh_lead(root,open) {
   return{events:ev,label:`EVH Triad Run (pos ${pos})`};
 }
 
-function evh_rhythm(root,open,dd) {
+function evh_rhythm(root,open) {
   const type=pick(['mixo','pedal_triad','chug']);
 
   if(type==='mixo') {
@@ -548,7 +548,7 @@ function jade_lead(root,open) {
   return{events:ev,label:`Jade Girl's Not Grey Lead`};
 }
 
-function jade_rhythm(root,open,dd) {
+function jade_rhythm(root,open) {
   const type=pick(['days_verse','girls_grey','bleed_black','art_drowning']);
   const rootF=gf(root,1,open)??2;
 
@@ -653,7 +653,7 @@ function ian_lead(root,open) {
   return{events:ev,label:"Ian River Below Lead"};
 }
 
-function ian_rhythm(root,open,dd) {
+function ian_rhythm(root,open) {
   const type=pick(['midnight_mass','try_honesty','red_flag','viking_march']);
   const rootF=gf(root,0,open)??0;
 
@@ -742,7 +742,7 @@ function generateExercise(sel,isLead){
     const prof=GEN_MAP[id];
     const root=pick([40,42,43,45,47,38,41]);
     let result;
-    try{ result=isLead?prof.lead(root,prof.open):prof.rhythm(root,prof.open,prof.dd); }catch(e){continue;}
+    try{ result=isLead?prof.lead(root,prof.open):prof.rhythm(root,prof.open,prof.dd); }catch{continue;}
     if(!result||result.events.length<6) continue;
     const valid=result.events.filter(e=>e.fret>=0&&e.fret<=22&&e.col>=0&&e.col<64);
     if(valid.length<6) continue;
@@ -799,8 +799,8 @@ function Panel({type,sel}){
 
   const stopAll=useCallback(()=>{
     clearInterval(progRef.current);
-    nodesRef.current.forEach(n=>{try{n.stop?.();n.disconnect?.();}catch(e){}});
-    nodesRef.current=[]; try{ctxRef.current?.close();}catch(e){} ctxRef.current=null;
+    nodesRef.current.forEach(n=>{try{n.stop?.();n.disconnect?.();}catch{/* node already stopped or disconnected */}});
+    nodesRef.current=[]; try{ctxRef.current?.close();}catch{/* context already closed */} ctxRef.current=null;
     setPlaying(false); setProgress(0); setBeat(-1);
   },[]);
   useEffect(()=>()=>{stopAll();},[stopAll]);
