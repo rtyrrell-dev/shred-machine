@@ -30,6 +30,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run build
+      - run: npm test
 
   mcp-test:
     name: MCP input validation
