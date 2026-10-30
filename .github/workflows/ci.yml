@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # New advisories are published without any commit, so re-audit weekly.
+    - cron: "17 6 * * 1"
+
+# Least privilege: jobs can read the repo and nothing else unless a job says so.
+permissions:
+  contents: read
+
+# Third-party actions are pinned to full commit SHAs (the comment is the tag
+# the SHA was resolved from). Dependabot keeps them current.
+jobs:
+  build:
+    name: Lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+      # --ignore-scripts: install scripts of dependencies never run in CI.
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+
+  mcp-test:
+    name: MCP input validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+        working-directory: mcp
+      - run: npm test
+        working-directory: mcp
+
+  audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+      # Root: fail on high or critical in anything that ships. Dev tooling
+      # (vite dev server, eslint) is excluded because it never reaches
+      # the deployed static build.
+      - run: npm audit --omit=dev --audit-level=high
+      # mcp/: all dependencies are runtime dependencies, so nothing is omitted.
+      # The audit is clean today, so there are no exceptions to document here.
+      # If one is ever needed (for example a finding in the HTTP transport code
+      # that this stdio-only server never loads), add it here with the advisory
+      # ID and the reason, rather than lowering the threshold.
+      - run: npm audit --audit-level=high
+        working-directory: mcp
+
+  gitleaks:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # the action lists PR commits to scan
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # full history available, so the action can scan whole commit ranges
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Only needed if the repo is owned by an organization, not a personal account.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}

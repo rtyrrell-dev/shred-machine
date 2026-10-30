@@ -4,6 +4,7 @@ import DEM  from './guitarists/demartini.js';
 import LNCH from './guitarists/george-lynch.js';
 import JADE from './guitarists/puget.js';
 import IAN  from './guitarists/ian-dsa.js';
+import { buildPrintHtml } from './printDoc.js';
 
 const STYLES = `@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap'); @keyframes flicker{0%,100%{opacity:1}93%{opacity:.7}94%{opacity:1}97%{opacity:.9}} @keyframes pulse-pink{0%,100%{text-shadow:0 0 8px #ff2d78,0 0 20px #ff2d78}50%{text-shadow:0 0 18px #ff2d78,0 0 40px #ff2d78,0 0 60px #ff2d78}} @keyframes pulse-cyan{0%,100%{text-shadow:0 0 8px #00f5ff,0 0 20px #00f5ff}50%{text-shadow:0 0 18px #00f5ff,0 0 40px #00f5ff,0 0 60px #00f5ff}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} .root{background:#000;min-height:100vh;font-family:'Share Tech Mono',monospace;color:#eee;padding:0 0 2rem;position:relative;} .scanlines{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);} .logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(1.6rem,4.5vw,3rem);text-align:center;letter-spacing:.12em;color:#fff;animation:flicker 5s infinite;padding:1.2rem 0 .2rem;text-shadow:0 0 10px #ff2d78,0 0 30px #ff2d78,0 0 5px #fff;} .tagline{text-align:center;font-size:.65rem;letter-spacing:.3em;color:#666;margin-bottom:.8rem;text-transform:uppercase;} .guitarist-bar{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;padding:.4rem 1rem .8rem;position:relative;z-index:1;} .g-btn{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.25rem .5rem;border:1px solid #444;border-radius:2px;background:transparent;color:#888;cursor:pointer;text-transform:uppercase;transition:all .15s;} .g-btn:hover{border-color:#aaa;color:#eee;} .g-btn.sel{border-color:var(--gc);color:var(--gc);background:color-mix(in srgb,var(--gc) 15%,transparent);} .g-btn.random-btn{border-color:#b44fff;color:#b44fff;} .sel-hint{font-size:.58rem;color:#555;text-align:center;letter-spacing:.1em;margin-bottom:.5rem;} .panels{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:0 .8rem;position:relative;z-index:1;} @media(max-width:680px){.panels{grid-template-columns:1fr}} .panel{border:1px solid;border-radius:4px;padding:.9rem;background:rgba(0,0,0,.85);} .panel-lead{border-color:#ff2d78;box-shadow:0 0 12px rgba(255,45,120,.25),inset 0 0 20px rgba(255,45,120,.04);} .panel-rhythm{border-color:#00f5ff;box-shadow:0 0 12px rgba(0,245,255,.25),inset 0 0 20px rgba(0,245,255,.04);} .panel-title{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.25rem;} .tl{color:#ff2d78;animation:pulse-pink 2.5s ease-in-out infinite;} .tr{color:#00f5ff;animation:pulse-cyan 2.5s ease-in-out infinite;} .panel-sub{font-size:.58rem;letter-spacing:.12em;color:#555;margin-bottom:.7rem;text-transform:uppercase;} .gen-btn{width:100%;padding:.5rem 0;font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.12em;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:all .15s;border:1px solid;} .gen-l{background:rgba(255,45,120,.1);color:#ff2d78;border-color:#ff2d78;} .gen-l:hover{background:rgba(255,45,120,.22);box-shadow:0 0 14px rgba(255,45,120,.4);} .gen-r{background:rgba(0,245,255,.08);color:#00f5ff;border-color:#00f5ff;} .gen-r:hover{background:rgba(0,245,255,.18);box-shadow:0 0 14px rgba(0,245,255,.4);} .meta{display:flex;align-items:center;gap:.4rem;margin:.6rem 0 .3rem;font-size:.65rem;flex-wrap:wrap;} .badge{padding:2px 7px;border-radius:2px;font-size:.6rem;letter-spacing:.08em;} .bl{background:rgba(255,45,120,.18);color:#ff2d78;border:1px solid rgba(255,45,120,.45);} .br{background:rgba(0,245,255,.12);color:#00f5ff;border:1px solid rgba(0,245,255,.35);} .beat-dots{display:flex;gap:5px;align-items:center;margin-left:auto;} .dot{width:9px;height:9px;border-radius:50%;border:1px solid;transition:background .06s;} .dl{border-color:#ff2d78;}.dl.on{background:#ff2d78;box-shadow:0 0 7px #ff2d78;} .dr{border-color:#00f5ff;}.dr.on{background:#00f5ff;box-shadow:0 0 7px #00f5ff;} .prog-wrap{height:3px;background:#111;border-radius:2px;margin:.45rem 0 .35rem;overflow:hidden;} .prog{height:100%;border-radius:2px;} .pl{background:linear-gradient(90deg,#ff2d78,#ff6bab);} .pr{background:linear-gradient(90deg,#00f5ff,#7ef5ff);} .tab-box{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:3px;padding:.55rem .45rem;margin:.4rem 0;font-family:'Share Tech Mono',monospace;font-size:clamp(.54rem,1.3vw,.7rem);line-height:1.65;overflow-x:auto;min-height:85px;white-space:pre;} .tab-l{color:#ff8ab8;}.tab-r{color:#7ef5ff;} .ctrl{display:flex;gap:.4rem;margin-top:.55rem;flex-wrap:wrap;} .cb{padding:.25rem .6rem;font-size:.6rem;font-family:'Share Tech Mono',monospace;border-radius:2px;cursor:pointer;letter-spacing:.07em;border:1px solid;background:transparent;transition:all .15s;text-transform:uppercase;} .cbl{color:#ff2d78;border-color:rgba(255,45,120,.45);}.cbl:hover{background:rgba(255,45,120,.13);} .cbl.on{background:rgba(255,45,120,.22);box-shadow:0 0 7px rgba(255,45,120,.35);} .cbr{color:#00f5ff;border-color:rgba(0,245,255,.35);}.cbr:hover{background:rgba(0,245,255,.1);} .cbr.on{background:rgba(0,245,255,.18);box-shadow:0 0 7px rgba(0,245,255,.28);} .cb:disabled{opacity:.3;cursor:not-allowed;} .type-tag{font-size:.62rem;padding:1px 6px;border-radius:2px;}`;
 
@@ -91,7 +92,7 @@ function pwrE(rf,open,dd) {
   if(dd&&rf<=14) return[[0,rf],[1,rf],[2,rf]];
   return[[0,rf],[1,clamp(rf+2,0,22)],[2,clamp(rf+2,0,22)]];
 }
-function pwrA(rf,open) {
+function pwrA(rf) {
   return[[1,rf],[2,clamp(rf+2,0,22)],[3,clamp(rf+2,0,22)]];
 }
 function addPwr(ev,col,ch){ ch.forEach(([s,f])=>ev.push({col,str:s,fret:f})); }
@@ -163,7 +164,7 @@ function evh_lead(root,open) {
   return{events:ev,label:`EVH Triad Run (pos ${pos})`};
 }
 
-function evh_rhythm(root,open,dd) {
+function evh_rhythm(root,open) {
   const type=pick(['mixo','pedal_triad','chug']);
 
   if(type==='mixo') {
@@ -547,7 +548,7 @@ function jade_lead(root,open) {
   return{events:ev,label:`Jade Girl's Not Grey Lead`};
 }
 
-function jade_rhythm(root,open,dd) {
+function jade_rhythm(root,open) {
   const type=pick(['days_verse','girls_grey','bleed_black','art_drowning']);
   const rootF=gf(root,1,open)??2;
 
@@ -652,7 +653,7 @@ function ian_lead(root,open) {
   return{events:ev,label:"Ian River Below Lead"};
 }
 
-function ian_rhythm(root,open,dd) {
+function ian_rhythm(root,open) {
   const type=pick(['midnight_mass','try_honesty','red_flag','viking_march']);
   const rootF=gf(root,0,open)??0;
 
@@ -741,7 +742,7 @@ function generateExercise(sel,isLead){
     const prof=GEN_MAP[id];
     const root=pick([40,42,43,45,47,38,41]);
     let result;
-    try{ result=isLead?prof.lead(root,prof.open):prof.rhythm(root,prof.open,prof.dd); }catch(e){continue;}
+    try{ result=isLead?prof.lead(root,prof.open):prof.rhythm(root,prof.open,prof.dd); }catch{continue;}
     if(!result||result.events.length<6) continue;
     const valid=result.events.filter(e=>e.fret>=0&&e.fret<=22&&e.col>=0&&e.col<64);
     if(valid.length<6) continue;
@@ -798,8 +799,8 @@ function Panel({type,sel}){
 
   const stopAll=useCallback(()=>{
     clearInterval(progRef.current);
-    nodesRef.current.forEach(n=>{try{n.stop?.();n.disconnect?.();}catch(e){}});
-    nodesRef.current=[]; try{ctxRef.current?.close();}catch(e){} ctxRef.current=null;
+    nodesRef.current.forEach(n=>{try{n.stop?.();n.disconnect?.();}catch{/* node already stopped or disconnected */}});
+    nodesRef.current=[]; try{ctxRef.current?.close();}catch{/* context already closed */} ctxRef.current=null;
     setPlaying(false); setProgress(0); setBeat(-1);
   },[]);
   useEffect(()=>()=>{stopAll();},[stopAll]);
@@ -824,7 +825,11 @@ function Panel({type,sel}){
     if(!tab) return;
     const color=isLead?'#ff2d78':'#00f5ff'; const nc=isLead?'#ff8ab8':'#7ef5ff';
     const w=window.open('','_blank');
-    w.document.write(`<html><head><title>SHRED MACHINE</title><style>body{background:#000;color:#eee;font-family:monospace;padding:2rem;}h1{color:${color};font-size:1.3rem;}p{color:#888;font-size:.8rem;margin:0 0 1rem;}pre{font-size:.85rem;line-height:1.8;color:${nc};}</style></head><body><h1>⚡ SHRED MACHINE</h1><p>${label} | ${bpm} BPM | ${isLead?'LEAD':'RHYTHM'}</p><pre>${tab}</pre><script>window.onload=()=>window.print()<\/script></body></html>`);
+    if(!w) return;
+    w.document.write(buildPrintHtml({color,nc,label,bpm,isLead,tab}));
+    // Same moment the old inline script ran: the popup's load event, after close().
+    // Attached after write() because document.open() erases the window's listeners.
+    w.addEventListener('load',()=>w.print());
     w.document.close();
   };
 
